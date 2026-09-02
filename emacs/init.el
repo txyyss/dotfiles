@@ -390,6 +390,12 @@ Unicode code points."
 
 ;;; OCaml
 
+(with-eval-after-load 'project
+  (add-to-list 'project-vc-extra-root-markers "dune-project"))
+
+(with-eval-after-load 'tuareg-opam
+  (require 'flymake-proc))
+
 (use-package utop
   :ensure t)
 
