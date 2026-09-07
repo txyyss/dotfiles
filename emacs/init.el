@@ -315,7 +315,10 @@ Use `revert-buffer' (\\[revert-buffer]) to restore the original listing."
   :config
   (ligature-set-ligatures 'emacs-lisp-mode ligatures-iosevka)
   (ligature-set-ligatures 'coq-mode ligatures-iosevka)
-  (ligature-set-ligatures 'lean4-mode ligatures-iosevka))
+  (ligature-set-ligatures 'lean4-mode ligatures-iosevka)
+  (ligature-set-ligatures 'tuareg-mode ligatures-iosevka)
+  (ligature-set-ligatures 'utop-mode ligatures-iosevka)
+  (global-ligature-mode t))
 
 (pdf-loader-install)
 

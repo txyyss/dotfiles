@@ -183,7 +183,7 @@
  '(tramp-syntax 'default nil (tramp))
  '(treesit-font-lock-level 4)
  '(user-full-name "Shengyi Wang")
- '(utop-command "opam exec -- utop -emacs")
+ '(utop-command "opam exec -- dune utop . -- -emacs")
  '(utop-edit-command nil)
  '(vc-follow-symlinks t)
  '(version-control t)
