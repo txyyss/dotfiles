@@ -6,129 +6,101 @@
 
 ;;; Code:
 
-(require 'tab-line)
+(require 'face-remap)
 (require 'modus-themes)
 
-(defconst my-box--border
-  (modus-themes-get-color-value 'border :with-overrides))
-(defconst my-box--canvas
-  (modus-themes-get-color-value 'bg-dim :with-overrides))
-(defconst my-box--edge
-  (propertize " " 'face `(:background ,my-box--border)
-              'display '(space :width (2))))
-(defconst my-box--strip
-  (propertize " " 'face `(:background ,my-box--border)
-              'display '(space :align-to right :height (2) :ascent 100)))
+(defcustom my-box-border-width 2
+  "Width of Box borders in Emacs display pixels.
+Use a positive integer, normally 2 or larger.  This controls the top,
+sides, and bottom strip in windows without a mode line.  Inset horizontal
+strokes on native mode and header lines remain one pixel."
+  :type 'integer
+  :group 'faces
+  :initialize #'custom-initialize-default
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (my-box-enable)))
 
-(defvar-local my-box--header-installed nil)
-(defvar my-box--original-header-line-map
-  (lookup-key (current-global-map) [header-line]))
+(defconst my-box--strip-format
+  (list (propertize " " 'display
+                    '(space :align-to right :height (my-box-border-width) :ascent 100)))
+  "Shared format for the top border and the bottom strip without a mode line.")
 
-(defun my-box--mode-line-binding (event &optional type)
-  "Return the mode-line binding at EVENT, optionally for TYPE."
-  (let ((binding
-         (keymap-lookup
-          (remq (current-global-map)
-                (current-active-maps nil (event-start event)))
-          (key-description (vector 'mode-line (or type (car event)))) t)))
-    (unless (numberp binding) binding)))
-
-(defun my-box--header-line-event (event)
-  "Use EVENT's mode-line binding when the header line has none."
-  (interactive "e")
-  (let* ((type (car event))
-         (managed
-          (buffer-local-value
-           'my-box--header-installed
-           (window-buffer (posn-window (event-start event)))))
-         (modifiers (event-modifiers type))
-         (release (and (memq 'down modifiers)
-                       (event-convert-list
-                        (append (remq 'down modifiers)
-                                (list (event-basic-type type))))))
-         (mode-binding (and managed (my-box--mode-line-binding event)))
-         (release-binding
-          (and managed release (not mode-binding)
-               (my-box--mode-line-binding event release))))
-    (cond
-     (mode-binding
-      (let ((copy (copy-tree event)))
-        (dolist (position (cdr copy))
-          (when (posnp position)
-            (setf (cadr position) 'mode-line)))
-        (push (cons 'no-record copy) unread-command-events)))
-     (release-binding nil)
-     (t
-      (let ((binding
-             (lookup-key my-box--original-header-line-map (vector type) t)))
-        (cond ((keymapp binding) (popup-menu binding event))
-              ((commandp binding)
-               (call-interactively binding nil (vector event)))))))))
-
-(defvar my-box--header-line-map
-  (define-keymap "<t>" #'my-box--header-line-event))
+(defvar-local my-box--mode-line-remapping nil)
 
 (defun my-box--set-faces ()
   "Apply the Box and Tab Bar faces."
-  (dolist (face '(window-divider window-divider-first-pixel
-                  window-divider-last-pixel))
-    (set-face-foreground face my-box--canvas))
-  (set-face-background 'internal-border my-box--canvas)
-  (set-face-background 'fringe my-box--border)
-  (dolist (face '(mode-line-active mode-line-inactive
-                  tab-line tab-line-active tab-line-inactive))
-    (set-face-attribute face nil
-                        :background my-box--border
-                        :foreground my-box--border
-                        :height 10 :box nil :underline nil :overline nil))
-  (set-face-attribute 'header-line-active nil
-                      :background (modus-themes-get-color-value 'bg-active)
-                      :box nil :overline nil)
-  (set-face-attribute 'header-line-inactive nil
-                      :background (modus-themes-get-color-value 'bg-inactive)
-                      :box nil :overline nil)
-  (set-face-attribute 'tab-bar nil :background my-box--canvas)
-  (set-face-attribute 'tab-bar-tab nil
-                      :background (modus-themes-get-color-value 'bg-active)
-                      :box nil)
-  (set-face-attribute 'tab-bar-tab-inactive nil
-                      :background (modus-themes-get-color-value 'bg-inactive)
-                      :box nil))
+  (let* ((canvas (modus-themes-get-color-value 'bg-dim :with-overrides))
+         (border (modus-themes-get-color-value 'bg-mode-line-active :with-overrides))
+         ;; Inset horizontal strokes merge into the mode-line background.
+         (sides `(:line-width (,my-box-border-width . -1) :color ,border)))
+    (dolist (face '(window-divider window-divider-first-pixel
+                   window-divider-last-pixel))
+      (set-face-foreground face canvas))
+    (set-face-background 'internal-border canvas)
+    (dolist (face '(mode-line-active mode-line-inactive))
+      (set-face-attribute face nil
+                          :background border :height 'unspecified :box sides
+                          :overline nil :underline `(:color ,border :position t)))
+    (dolist (face '(header-line-active header-line-inactive))
+      (set-face-attribute face nil :box sides))
+    (dolist (face '(tab-line-active tab-line-inactive))
+      (set-face-attribute face nil
+                          :background border :foreground border :height 10
+                          :box nil :underline nil :overline nil))
+    (set-face-background 'tab-bar canvas)
+    (set-face-attribute 'tab-bar-tab nil
+                        :background (modus-themes-get-color-value
+                                     'bg-tab-current :with-overrides)
+                        :box nil)
+    (set-face-attribute 'tab-bar-tab-inactive nil
+                        :background (modus-themes-get-color-value
+                                     'bg-tab-other :with-overrides)
+                        :box nil)))
 
 (defun my-box--style-window (window)
-  "Apply Box styling to WINDOW."
+  "Apply Box styling to WINDOW, preserving its native status and header lines."
   (with-current-buffer (window-buffer window)
-    (when (and mode-line-format (not my-box--header-installed))
-      (setq-local mode-line-format
-                  (append (list my-box--edge) mode-line-format
-                          (list my-box--edge))
-                  header-line-format mode-line-format
-                  my-box--header-installed t))
-    (set-window-fringes window 2 2 t)
-    (set-window-parameter window 'tab-line-format (list my-box--strip))
-    (set-window-parameter window 'mode-line-format (list my-box--strip))))
+    (setq-local mode-line-right-align-edge 'right-fringe)
+    (face-remap-set-base 'fringe 'tab-line-active)
+    (cond
+     (mode-line-format
+      (mapc #'face-remap-remove-relative my-box--mode-line-remapping)
+      (setq my-box--mode-line-remapping nil))
+     ((null my-box--mode-line-remapping)
+      (setq my-box--mode-line-remapping
+            (mapcar (lambda (face)
+                      (face-remap-add-relative face :height 10 :box nil :underline nil))
+                    '(mode-line-active mode-line-inactive)))))
+    (set-window-fringes window my-box-border-width my-box-border-width t)
+    (set-window-parameter window 'tab-line-format my-box--strip-format)
+    (set-window-parameter window 'mode-line-format
+                          (unless mode-line-format my-box--strip-format))))
 
 (defun my-box-refresh (&optional frame)
   "Refresh Box styling in FRAME."
   (let ((frame (or frame (selected-frame))))
-    (dolist (window (window-list frame 'no-minibuffer))
-      (my-box--style-window window))
-    (set-window-fringes (minibuffer-window frame) 0 0 nil t))
-  (force-mode-line-update t))
+    (when (and (display-graphic-p frame) (not (frame-parent frame)))
+      (dolist (window (window-list frame 'no-minibuffer))
+        (my-box--style-window window))
+      (set-window-fringes (minibuffer-window frame) 0 0 nil t))))
 
 (defun my-box-enable ()
   "Enable Box-style windows."
   (setq window-divider-default-places t
         window-divider-default-right-width 12
         window-divider-default-bottom-width 12)
-  (modify-all-frames-parameters '((internal-border-width . 8)))
-  (define-key (current-global-map) [header-line] my-box--header-line-map)
-  (window-divider-mode 1)
+  (add-to-list 'default-frame-alist '(internal-border-width . 8))
+  (unless window-divider-mode
+    (window-divider-mode 1))
   (my-box--set-faces)
   (add-hook 'modus-themes-after-load-theme-hook #'my-box--set-faces)
   (add-hook 'window-buffer-change-functions #'my-box-refresh)
   (add-hook 'after-change-major-mode-hook #'my-box-refresh)
-  (my-box-refresh))
+  (dolist (frame (frame-list))
+    (when (and (display-graphic-p frame) (not (frame-parent frame)))
+      (modify-frame-parameters frame '((internal-border-width . 8)))
+      (my-box-refresh frame))))
 
 (provide 'my-box)
 
