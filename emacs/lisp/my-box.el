@@ -98,7 +98,7 @@
 (defun my-box--style-window (window)
   "Apply Box styling to WINDOW."
   (with-current-buffer (window-buffer window)
-    (unless my-box--header-installed
+    (when (and mode-line-format (not my-box--header-installed))
       (setq-local mode-line-format
                   (append (list my-box--edge) mode-line-format
                           (list my-box--edge))
