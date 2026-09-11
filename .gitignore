@@ -1,2 +1,8 @@
 *.*~
 *.elc
+
+# Temporary font source checkouts and build output.
+/.build/
+/fonts/iosevka/dist/
+/fonts/iosevka/.venv/
+/fonts/iosevka/__pycache__/

@@ -1,0 +1,115 @@
+name: Build Iosevka fonts
+
+# Font builds only start when explicitly requested in the Actions UI or gh CLI.
+on:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "同时发布到 GitHub Release，供长期下载"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-iosevka-fonts
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Check out dotfiles
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Read Iosevka version
+        id: version
+        shell: bash
+        run: |
+          version="$(cat fonts/iosevka/version.txt)"
+          [[ "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Check out Iosevka
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: be5invis/Iosevka
+          ref: ${{ steps.version.outputs.version }}
+          path: .build/iosevka
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: .build/iosevka/package-lock.json
+
+      - name: Install build and verification dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ttfautohint python3-venv
+          python3 -m venv "$RUNNER_TEMP/font-validation"
+          "$RUNNER_TEMP/font-validation/bin/pip" install --disable-pip-version-check -r fonts/iosevka/requirements.txt
+
+      - name: Install Iosevka dependencies
+        working-directory: .build/iosevka
+        run: npm ci --no-audit --no-fund
+
+      - name: Build both font families
+        shell: bash
+        run: |
+          cp fonts/iosevka/private-build-plans.toml .build/iosevka/private-build-plans.toml
+          cd .build/iosevka
+          npm run build -- ttf::IosevkaShengyi ttf::IosevkaTermShengyi --jCmd=2
+
+      - name: Verify fonts and package download
+        shell: bash
+        run: |
+          "$RUNNER_TEMP/font-validation/bin/python" fonts/iosevka/package-fonts.py \
+            .build/iosevka "$RUNNER_TEMP/font-artifacts" --dotfiles-commit "$GITHUB_SHA"
+          cat "$RUNNER_TEMP/font-artifacts/RELEASE_NOTES.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload font download
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: iosevka-shengyi-${{ github.run_number }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/font-artifacts/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+  release:
+    if: ${{ inputs.publish_release }}
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download font package
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: iosevka-shengyi-${{ github.run_number }}-${{ github.run_attempt }}
+          path: font-artifacts
+
+      - name: Publish font release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          IOSEVKA_VERSION: ${{ needs.build.outputs.version }}
+        shell: bash
+        run: |
+          gh release create "fonts-iosevka-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" \
+            font-artifacts/*.zip \
+            --target "$GITHUB_SHA" \
+            --title "Iosevka Shengyi · $IOSEVKA_VERSION · build $GITHUB_RUN_NUMBER" \
+            --notes-file font-artifacts/RELEASE_NOTES.md \
+            --latest=false

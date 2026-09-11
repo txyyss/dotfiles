@@ -1,7 +1,8 @@
 # dotfiles
 
-这是我的个人 macOS 配置仓库，目前管理 Emacs、Ghostty、Fastfetch 和
-Zsh。配置文件保存在仓库中，再通过符号链接放到各程序实际读取的位置。
+这是我的个人 macOS 配置仓库，目前管理 Emacs、Ghostty、Fastfetch、
+Zsh 和自定义 Iosevka 字体。程序配置保存在仓库中，再通过符号链接放到
+各程序实际读取的位置；字体配置通过 GitHub Actions 手动构建。
 
 这个仓库首先服务于我当前的开发环境，不是通用配置发行版。部分设置依赖
 macOS、Homebrew、特定字体和已安装的开发工具；新机器部署前应先阅读下面的
@@ -11,6 +12,7 @@ macOS、Homebrew、特定字体和已安装的开发工具；新机器部署前�
 
 ```text
 dotfiles/
+├── .github/workflows/build-fonts.yml
 ├── emacs/
 │   ├── early-init.el
 │   ├── init.el
@@ -20,6 +22,13 @@ dotfiles/
 │   └── logos/
 ├── ghostty/
 │   └── config.ghostty
+├── fonts/
+│   └── iosevka/
+│       ├── private-build-plans.toml
+│       ├── version.txt
+│       ├── package-fonts.py
+│       ├── requirements.txt
+│       └── README.md
 ├── zsh/
 │   ├── .zprofile
 │   └── .zshrc
@@ -68,6 +77,11 @@ dotfiles/
 - Ghostty 使用 `Iosevka Term Curly`。
 - Emacs 配置使用 Iosevka Curly 系列和 `LXGW WenKai`。
 - Zsh 提示符包含 Powerline 私用区字符，终端字体需要提供对应字形。
+
+自定义的 `Iosevka Shengyi` 和 `Iosevka Term Shengyi` 构建配置位于
+[`fonts/iosevka/`](fonts/iosevka/README.md)。两套字体共用 Curly 字形设计，
+采用长点零、双层带衬线 a 和 dlig 连字预设。构建只支持手动触发，可下载
+Artifact 或选择发布到 Release。安装字体后，再按该目录的说明切换应用。
 
 ### 可选的命令行工具
 
