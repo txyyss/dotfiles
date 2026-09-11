@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import io
 import json
+import math
 import subprocess
 import tomllib
 import zipfile
@@ -37,8 +38,10 @@ def collect_fonts(source, plans):
     files = []
     for name, plan in plans.items():
         widths = axis(plans, plan, "widths")
+        # Iosevka writes post.italicAngle with Math.round(-angle), which rounds
+        # to an integer with ties toward positive infinity, unlike Python round.
         expected = {
-            (weight["menu"], width["menu"], round(-slope["angle"], 2))
+            (weight["menu"], width["menu"], math.floor(0.5 - slope["angle"]))
             for weight in plan["weights"].values()
             for width in widths.values()
             for slope in axis(plans, plan, "slopes").values()
