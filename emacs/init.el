@@ -285,12 +285,11 @@ Use `revert-buffer' (\\[revert-buffer]) to restore the original listing."
 
 ;;; 设置字体
 (dolist (script '(latin greek cyrillic symbol))
-  (set-fontset-font t script (font-spec :family "Iosevka Curly") nil 'prepend))
+  (set-fontset-font t script (font-spec :family "Iosevka Shengyi") nil 'prepend))
 (dolist (script '(han kana hangul cjk-misc bopomofo))
   (set-fontset-font t script (font-spec :family "LXGW WenKai") nil 'prepend))
-(set-fontset-font t '(#xe000 . #xf8ff) (font-spec :family "Iosevka Curly") nil 'prepend)
-;; Iosevka Version = 34.8.1
-;; Download from https://github.com/be5invis/Iosevka/releases
+(set-fontset-font t '(#xe000 . #xf8ff) (font-spec :family "Iosevka Shengyi") nil 'prepend)
+;; Custom font build configuration and upstream version: ../fonts/iosevka/
 
 
 (defun f2c (fahrenheit)
@@ -303,21 +302,21 @@ Use `revert-buffer' (\\[revert-buffer]) to restore the original listing."
   (interactive "nCelsius (°C): ")
   (message "%s °F" (+ (/ (* celsius 9.0) 5.0) 32)))
 
-(defvar ligatures-iosevka
-  '("-<<" "-<" "-<-" "<--" "<---" "<<-" "<-" "->" "->>" "--->" "-->" "->-" ">-" ">>-"
-    "=<<" "=<" "=<=" "<==" "<===" "<<=" "<=" "=>" "=>>" "===>" "==>" "=>=" ">=" ">>="
-    "<->" "<-->" "<--->" "<---->" "<=>" "<==>" "<===>" "<====>" "::" ":::" "__"
-    "<~~" "</" "</>" "/>" "~~>" "==" "!=" "<>" "===" "!==" "!==="
-    "<:" ":=" "*=" "*+" "<*" "<*>" "*>" "<|" "<|>" "|>" "<." "<.>" ".>" "+*" "=*" "=:" ":>"
-    "(*" "*)" "/*" "*/" "[|" "|]" "{|" "|}" "++" "+++" "\\/" "/\\" "|-" "-|" "<!--" "<!---"))
-
 (use-package ligature
   :config
-  (ligature-set-ligatures 'emacs-lisp-mode ligatures-iosevka)
-  (ligature-set-ligatures 'coq-mode ligatures-iosevka)
-  (ligature-set-ligatures 'lean4-mode ligatures-iosevka)
-  (ligature-set-ligatures 'tuareg-mode ligatures-iosevka)
-  (ligature-set-ligatures 'utop-mode ligatures-iosevka)
+  ;; Shape operator runs as a whole, including variable-length arrows/chains.
+  ;; Iosevka Shengyi's calt feature selects the supported dlig substitutions.
+  ;; See Iosevka v34.8.1 params/ligation-set.toml and gsub-ligation.ptl.
+  (let* ((operators "!#%&()*+,-./:;<=>?@[\\]^_{|}~⁄⁎−≡")
+         (operator-tail (rx-to-string `(+ (any ,operators))))
+         (ligatures (mapcar (lambda (char)
+                              (list (char-to-string char) operator-tail))
+                            operators)))
+    ;; Checkbox shaping needs its list marker and space in the same run.
+    (dolist (marker '("-" "+" "*"))
+      (push (list marker (rx " [" (any " xX") "]")) ligatures))
+    (dolist (mode '(emacs-lisp-mode coq-mode lean4-mode tuareg-mode utop-mode))
+      (ligature-set-ligatures mode ligatures)))
   (global-ligature-mode t))
 
 (pdf-loader-install)

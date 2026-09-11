@@ -81,10 +81,10 @@ gh workflow run build-fonts.yml --repo txyyss/dotfiles --ref master \
 ## 安装与应用
 
 解压字体 ZIP，使用 macOS「字体册」安装两个家族目录中的 TTF 文件。
-安装完成后再调整应用的字体设置；字号仍在应用中保持 18 pt。
+仓库中的 Emacs 和 Ghostty 配置已使用这两个字体家族，字号均为 18 pt。
 
-Emacs 中将主字体、`fixed-pitch`、`org-modern-symbol` 以及 fontset 中的
-`Iosevka Curly` 改为 `Iosevka Shengyi`。`Iosevka Curly Slab`、
+Emacs 的主字体、`fixed-pitch`、`org-modern-symbol` 以及拉丁、希腊、
+西里尔、符号和私用区 fontset 使用 `Iosevka Shengyi`。`Iosevka Curly Slab`、
 `Iosevka Aile` 和中文字体 `LXGW WenKai` 继续用于原有角色。
 
 Ghostty 使用：
@@ -96,8 +96,11 @@ font-size = 18
 ```
 
 字体包含连字，还需要应用把相应字符序列交给字体排版。Ghostty 的默认
-字体特性会使用 `calt`。Emacs 使用 `ligature.el`，目前仅为仓库配置列出
-的模式和序列启用；新增语言或序列时应相应扩充 Emacs 的连字规则。
+字体特性会使用 `calt`。Emacs 使用 `ligature.el`，在 `emacs-lisp-mode`、
+`coq-mode`、`lean4-mode`、`tuareg-mode` 和 `utop-mode` 中，将连续运算符
+交给字体完整排版，支持可变长度的箭头和符号链；带 `- `、`+ ` 或 `* `
+前缀的复选框也会包含所需上下文。匹配规则定义在局部 `let*` 中。
+实际显示哪些连字由字体决定；新增语言时再扩充模式列表。
 
 ## 本地复现
 

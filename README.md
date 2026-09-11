@@ -74,14 +74,15 @@ dotfiles/
 
 ### 字体
 
-- Ghostty 使用 `Iosevka Term Curly`。
-- Emacs 配置使用 Iosevka Curly 系列和 `LXGW WenKai`。
+- Ghostty 使用 `Iosevka Term Shengyi`。
+- Emacs 主字体使用 `Iosevka Shengyi`，中文使用 `LXGW WenKai`；衬线和比例
+  字体分别使用 `Iosevka Curly Slab` 和 `Iosevka Aile`。
 - Zsh 提示符包含 Powerline 私用区字符，终端字体需要提供对应字形。
 
 自定义的 `Iosevka Shengyi` 和 `Iosevka Term Shengyi` 构建配置位于
 [`fonts/iosevka/`](fonts/iosevka/README.md)。两套字体共用 Curly 字形设计，
 采用长点零、双层带衬线 a 和 dlig 连字预设。构建只支持手动触发，可下载
-Artifact 或选择发布到 Release。安装字体后，再按该目录的说明切换应用。
+Artifact 或选择发布到 Release。安装和使用方式见该目录说明。
 
 ### 可选的命令行工具
 
