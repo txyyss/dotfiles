@@ -9,13 +9,28 @@
 (require 'face-remap)
 (require 'modus-themes)
 
+(defgroup my-box nil
+  "Box-style window appearance."
+  :group 'faces)
+
+(defcustom my-box-spacing 10
+  "Space around and between Box windows in Emacs display pixels.
+This sets both frame padding and horizontal and vertical window gaps.
+It is independent of `my-box-border-width'."
+  :type 'integer
+  :group 'my-box
+  :initialize #'custom-initialize-default
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (my-box-enable)))
+
 (defcustom my-box-border-width 2
   "Width of Box borders in Emacs display pixels.
 Use a positive integer, normally 2 or larger.  This controls the top,
 sides, and bottom strip in windows without a mode line.  Inset horizontal
 strokes on native mode and header lines remain one pixel."
   :type 'integer
-  :group 'faces
+  :group 'my-box
   :initialize #'custom-initialize-default
   :set (lambda (symbol value)
          (set-default symbol value)
@@ -88,19 +103,23 @@ strokes on native mode and header lines remain one pixel."
 (defun my-box-enable ()
   "Enable Box-style windows."
   (setq window-divider-default-places t
-        window-divider-default-right-width 12
-        window-divider-default-bottom-width 12)
-  (add-to-list 'default-frame-alist '(internal-border-width . 8))
+        window-divider-default-right-width my-box-spacing
+        window-divider-default-bottom-width my-box-spacing)
   (unless window-divider-mode
     (window-divider-mode 1))
   (my-box--set-faces)
   (add-hook 'modus-themes-after-load-theme-hook #'my-box--set-faces)
   (add-hook 'window-buffer-change-functions #'my-box-refresh)
   (add-hook 'after-change-major-mode-hook #'my-box-refresh)
-  (dolist (frame (frame-list))
-    (when (and (display-graphic-p frame) (not (frame-parent frame)))
-      (modify-frame-parameters frame '((internal-border-width . 8)))
-      (my-box-refresh frame))))
+  (let ((parameters `((internal-border-width . ,my-box-spacing)
+                      (right-divider-width . ,my-box-spacing)
+                      (bottom-divider-width . ,my-box-spacing))))
+    (dolist (parameter parameters)
+      (setf (alist-get (car parameter) default-frame-alist) (cdr parameter)))
+    (dolist (frame (frame-list))
+      (when (and (display-graphic-p frame) (not (frame-parent frame)))
+        (modify-frame-parameters frame parameters)
+        (my-box-refresh frame)))))
 
 (provide 'my-box)
 
