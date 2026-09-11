@@ -1,6 +1,6 @@
 # Iosevka Shengyi
 
-这份配置生成两套个人字体，使用 Iosevka 34.8.1：
+这份配置生成两套个人字体，上游版本由 `version.txt` 指定：
 
 | 用途 | 字体家族 | 间距 | 字重 | 样式 |
 | --- | --- | --- | --- | --- |
@@ -113,5 +113,6 @@ npm run build -- ttf::IosevkaShengyi ttf::IosevkaTermShengyi --jCmd=2
 字体位于 `dist/IosevkaShengyi/TTF/` 和 `dist/IosevkaTermShengyi/TTF/`。
 打包脚本需要 Python 3.11 或更高版本及 `requirements.txt` 中的依赖。
 
-参考：[官方构建说明](https://github.com/be5invis/Iosevka/blob/v34.8.1/doc/custom-build.md)、
-[版本预设](https://github.com/be5invis/Iosevka/blob/v34.8.1/build-plans.toml)。
+参考：[最初使用的 34.8.1 构建说明](https://github.com/be5invis/Iosevka/blob/v34.8.1/doc/custom-build.md)、
+[34.8.1 版本预设](https://github.com/be5invis/Iosevka/blob/v34.8.1/build-plans.toml)。
+升级时如需查阅新文档，将链接中的 tag 换成 `version.txt` 对应的版本。
