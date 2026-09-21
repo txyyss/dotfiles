@@ -167,6 +167,11 @@ Use `revert-buffer' (\\[revert-buffer]) to restore the original listing."
 (setq kill-buffer-query-functions
       (delq 'process-kill-buffer-query-function kill-buffer-query-functions))
 
+(add-hook 'xwidget-webkit-mode-hook
+          (lambda ()
+            (set-xwidget-query-on-exit-flag
+             (xwidget-webkit-current-session) nil)))
+
 (defun my-compile-init-after-save ()
   "Compile the user init file after saving it."
   (when (file-equal-p buffer-file-name user-init-file)
@@ -176,7 +181,7 @@ Use `revert-buffer' (\\[revert-buffer]) to restore the original listing."
 
 (add-hook 'before-save-hook
           (lambda ()
-            (when (and (not (string-match ".*makefile.*" (message "%s" major-mode)))
+            (when (and (not (derived-mode-p 'makefile-mode))
                        (or (derived-mode-p 'prog-mode)
                            (eq major-mode 'coq-mode)
                            (eq major-mode 'org-mode)))
@@ -389,6 +394,10 @@ Unicode code points."
 (use-package lsp-ui
   :ensure t
   :hook (lsp-mode . lsp-ui-mode))
+
+;;; Lean
+(with-eval-after-load 'lean4-mode
+  (keymap-set lean4-mode-map "s-e" #'flycheck-list-errors))
 
 ;;; OCaml
 

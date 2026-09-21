@@ -22,6 +22,8 @@
  '(backup-directory-alist '(("." . "~/.emacs.d/backup")))
  '(bidi-paragraph-direction 'left-to-right)
  '(blink-cursor-mode nil)
+ '(browse-url-browser-function 'xwidget-webkit-browse-url)
+ '(browse-url-new-window-flag t)
  '(c-basic-offset 4)
  '(column-number-mode t)
  '(comint-process-echoes t)
@@ -42,7 +44,7 @@
  '(dired-recursive-copies 'always)
  '(dired-recursive-deletes 'always)
  '(display-buffer-alist
-   '(("\\*\\(Packages\\|vterm\\|Apropos\\|info\\|Customize .*\\)\\*"
+   '(("\\*\\(Packages\\|vterm\\|Apropos\\|info\\|Customize .*\\|xwidget-webkit: .*\\)\\*"
       display-buffer-in-tab)))
  '(display-time-24hr-format t)
  '(display-time-day-and-date t)
