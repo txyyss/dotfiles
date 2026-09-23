@@ -29,22 +29,25 @@
   "Recent files currently displayed on the dashboard.")
 
 (defconst my-dashboard--action-rows
-  '((("b" "Switch Buffer" my-dashboard--switch-buffer)
-     ("d" "Dired" my-dashboard--open-dired)
-     ("f" "Open File" my-dashboard--find-file))
+  '((("b/B" "Switch Buffer" my-dashboard--switch-buffer)
+     ("d/D" "Dired" my-dashboard--open-dired)
+     ("f/F" "Open File" my-dashboard--find-file))
     (("g" "Refresh" my-dashboard--refresh)
      ("s" "Scratch" my-dashboard--open-scratch)
      ("t" "VTerm" my-dashboard--open-vterm)))
   "Rows of dashboard actions.
-Each action is a list of its key, label, and interactive command.")
+Each action is a list of its key hint, label, and interactive command.")
 
 (defvar-keymap my-dashboard--mode-map
   :doc "Keymap for the internal dashboard mode."
   :parent special-mode-map
   "f" #'my-dashboard--find-file
+  "F" (lambda () (interactive) (my-dashboard--find-file t))
   "s" #'my-dashboard--open-scratch
   "b" #'my-dashboard--switch-buffer
+  "B" (lambda () (interactive) (my-dashboard--switch-buffer t))
   "d" #'my-dashboard--open-dired
+  "D" (lambda () (interactive) (my-dashboard--open-dired t))
   "t" #'my-dashboard--open-vterm
   "g" #'my-dashboard--refresh
   "RET" #'push-button
@@ -80,17 +83,17 @@ Each action is a list of its key, label, and interactive command.")
 
 (add-hook 'my-dashboard--mode-hook #'my-dashboard--disable-local-modes)
 
-(defun my-dashboard--find-file ()
-  "Open a file in another tab using Emacs minibuffer completion."
+(defun my-dashboard--find-file (&optional current-tab)
+  "Open a file via the minibuffer, in a new tab unless CURRENT-TAB is non-nil."
   (interactive)
   (let ((use-file-dialog nil))
-    (call-interactively #'find-file-other-tab)))
+    (call-interactively (if current-tab #'find-file #'find-file-other-tab))))
 
-(defun my-dashboard--open-dired ()
-  "Open Dired using Emacs minibuffer completion."
+(defun my-dashboard--open-dired (&optional current-tab)
+  "Open Dired via the minibuffer, in a new tab unless CURRENT-TAB is non-nil."
   (interactive)
   (let ((use-file-dialog nil))
-    (call-interactively #'dired-other-tab)))
+    (call-interactively (if current-tab #'dired #'dired-other-tab))))
 
 (defun my-dashboard--open-scratch ()
   "Open the scratch buffer in another tab."
@@ -108,12 +111,14 @@ Each action is a list of its key, label, and interactive command.")
         (find-file-other-tab file)
       (user-error "No recent file assigned to this key"))))
 
-(defun my-dashboard--switch-buffer ()
-  "Switch to another buffer in another tab."
+(defun my-dashboard--switch-buffer (&optional current-tab)
+  "Switch buffers in a new tab unless CURRENT-TAB is non-nil."
   (interactive)
-  (if (fboundp 'consult-buffer-other-tab)
-      (call-interactively #'consult-buffer-other-tab)
-    (call-interactively #'switch-to-buffer-other-tab)))
+  (let ((command (if current-tab #'consult-buffer #'consult-buffer-other-tab)))
+    (call-interactively
+     (if (fboundp command)
+         command
+       (if current-tab #'switch-to-buffer #'switch-to-buffer-other-tab)))))
 
 (defun my-dashboard--open-vterm ()
   "Open VTerm when it is available."
