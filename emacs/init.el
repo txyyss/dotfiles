@@ -241,6 +241,15 @@ Use `revert-buffer' (\\[revert-buffer]) to restore the original listing."
 (setq coq-highlight-hyps-cited-in-response nil)
 
 ;;; Lisp
+(defun my-slime-completion-at-point ()
+  "Complete through SLIME only when connected to Lisp."
+  (when (slime-connected-p)
+    (or (slime-c-p-c-completion-at-point)
+        (slime-filename-completion)
+        (slime-simple-completion-at-point))))
+
+(with-eval-after-load 'slime
+  (setq slime-completion-at-point-functions '(my-slime-completion-at-point)))
 (add-hook 'slime-repl-mode-hook #'enable-paredit-mode)
 (setq inferior-lisp-program "sbcl")
 (setq common-lisp-hyperspec-root
