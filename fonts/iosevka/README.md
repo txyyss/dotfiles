@@ -66,7 +66,7 @@ gh workflow run build-fonts.yml --repo txyyss/dotfiles --ref master \
 ## 升级 Iosevka
 
 1. 在 [Iosevka Releases](https://github.com/be5invis/Iosevka/releases) 查看新的
-   正式版本，将 `version.txt` 中的 `v34.8.1` 改为对应的版本 tag。
+   正式版本，将 `version.txt` 中的 `v34.9.0` 改为对应的版本 tag。
 2. 提交并推送版本文件，再手动运行 **Build Iosevka fonts**。
 3. 下载新字体并检查字形、字重和连字，满意后替换本机安装的旧版本。
 
