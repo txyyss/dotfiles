@@ -63,12 +63,12 @@ jobs:
         working-directory: .build/iosevka
         run: npm ci --no-audit --no-fund
 
-      - name: Build both font families
+      - name: Build both font families as Super TTC
         shell: bash
         run: |
           cp fonts/iosevka/private-build-plans.toml .build/iosevka/private-build-plans.toml
           cd .build/iosevka
-          npm run build -- ttf::IosevkaShengyi ttf::IosevkaTermShengyi --jCmd=2
+          npm run build -- super-ttc::IosevkaShengyi super-ttc::IosevkaTermShengyi --jCmd=2
 
       - name: Verify fonts and package download
         shell: bash

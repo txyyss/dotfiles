@@ -81,8 +81,9 @@ dotfiles/
 
 自定义的 `Iosevka Shengyi` 和 `Iosevka Term Shengyi` 构建配置位于
 [`fonts/iosevka/`](fonts/iosevka/README.md)。两套字体共用 Curly 字形设计，
-采用长点零、双层带衬线 a 和 dlig 连字预设。构建只支持手动触发，可下载
-Artifact 或选择发布到 Release。安装和使用方式见该目录说明。
+采用长点零、双层带衬线 a 和 dlig 连字预设，每个家族提供一个包含全部样式的
+Super TTC。构建只支持手动触发，可下载 Artifact 或选择发布到 Release。
+安装和使用方式见该目录说明。
 
 ### 可选的命令行工具
 

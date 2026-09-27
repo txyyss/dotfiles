@@ -7,7 +7,8 @@
 | Emacs | Iosevka Shengyi | normal | Regular 400、SemiBold 600、Bold 700 | 正体、斜体 |
 | Ghostty | Iosevka Term Shengyi | term | Regular 400、Medium 500、Bold 700 | 正体、斜体 |
 
-两套字体各生成 6 个 TTF，共 12 个。字宽为 500，斜体角度为 9.4°。
+两套字体各生成 1 个 Super TTC，每个文件包含该家族的 6 个样式，共 2 个
+`.ttc` 文件、12 个样式。字宽为 500，斜体角度为 9.4°。
 字形继承 Curly（ss20），将 `0` 改为 `long-dotted`，`a` 改为
 `double-storey-serifed`。`design` 中的选择适用于所有样式；若以后需要
 单独调整斜体，可以增加 `variants.italic`。
@@ -17,9 +18,10 @@
 `private-build-plans.toml` 是唯一的构建配置文件。Emacs 的
 `IosevkaShengyi` 计划保存共享字形；Ghostty 的 `IosevkaTermShengyi`
 继承它的字形、连字、宽度和斜体设置，并单独选择终端间距和字重。
+文件末尾的两个 `collectPlans` 分别将每个家族的所有样式合并为一个 Super TTC。
 
 在 [Customizer](https://typeof.net/Iosevka/customizer) 中调整后，将
-`IosevkaShengyi` 的配置更新到文件中，保留后面的 Term 计划。
+`IosevkaShengyi` 的配置更新到文件中，保留后面的 Term 计划和两个 `collectPlans`。
 修改共享字形或连字预设时，只需改第一套计划。
 
 当前使用 `ligations.inherits = "dlig"`。Iosevka 会将这个预设用于生成的
@@ -58,10 +60,11 @@ gh workflow run build-fonts.yml --repo txyyss/dotfiles --ref master \
   -f publish_release=true
 ```
 
-构建会检查字体数量、家族名称、字重、斜体角度、常用符号与 Powerline
-分隔符覆盖，并使用 HarfBuzz 验证正体和斜体中的箭头、连字符和括号星号
-连字确实通过 `calt` 生效。验证成功后，字体与原始配置、上游许可证、
-构建来源及各文件 SHA-256 一起打包。
+构建会逐个检查每个 TTC 内的字体样式，验证样式数量、家族名称、字重、
+斜体角度、常用符号与 Powerline 分隔符覆盖，并使用 HarfBuzz 按 TTC 内的
+字体索引验证正体和斜体中的箭头、连字符和括号星号连字确实通过 `calt`
+生效。验证成功后，两个 TTC 与原始配置、上游许可证、构建来源及各文件
+SHA-256 一起打包。
 
 ## 升级 Iosevka
 
@@ -80,7 +83,13 @@ gh workflow run build-fonts.yml --repo txyyss/dotfiles --ref master \
 
 ## 安装与应用
 
-解压字体 ZIP，使用 macOS「字体册」安装两个家族目录中的 TTF 文件。
+解压字体 ZIP，使用 macOS「字体册」安装下面两个文件：
+
+- `IosevkaShengyi/IosevkaShengyi.ttc`
+- `IosevkaTermShengyi/IosevkaTermShengyi.ttc`
+
+从旧的 TTF 安装迁移时，先在「字体册」停用或移除这两个家族的旧版 TTF，
+再安装 TTC。每个 TTC 已包含该家族所有字重的正体和斜体。
 仓库中的 Emacs 和 Ghostty 配置已使用这两个字体家族，字号均为 18 pt。
 
 Emacs 的主字体、`fixed-pitch`、`org-modern-symbol` 以及拉丁、希腊、
@@ -110,12 +119,13 @@ font-size = 18
 
 ```sh
 npm ci --no-audit --no-fund
-npm run build -- ttf::IosevkaShengyi ttf::IosevkaTermShengyi --jCmd=2
+npm run build -- super-ttc::IosevkaShengyi super-ttc::IosevkaTermShengyi --jCmd=2
 ```
 
-字体位于 `dist/IosevkaShengyi/TTF/` 和 `dist/IosevkaTermShengyi/TTF/`。
+字体位于 `dist/.super-ttc/IosevkaShengyi.ttc` 和
+`dist/.super-ttc/IosevkaTermShengyi.ttc`。
 打包脚本需要 Python 3.11 或更高版本及 `requirements.txt` 中的依赖。
 
-参考：[最初使用的 34.8.1 构建说明](https://github.com/be5invis/Iosevka/blob/v34.8.1/doc/custom-build.md)、
-[34.8.1 版本预设](https://github.com/be5invis/Iosevka/blob/v34.8.1/build-plans.toml)。
+参考：[34.9.0 的 TTC 构建说明](https://github.com/be5invis/Iosevka/blob/v34.9.0/doc/custom-build.md#ttc-building)、
+[34.9.0 版本预设](https://github.com/be5invis/Iosevka/blob/v34.9.0/build-plans.toml)。
 升级时如需查阅新文档，将链接中的 tag 换成 `version.txt` 对应的版本。

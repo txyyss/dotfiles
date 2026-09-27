@@ -78,3 +78,10 @@ css = 500
 shape = 700
 menu = 700
 css = 700
+
+# Package each family and all of its styles into a separate Super TTC.
+[collectPlans.IosevkaShengyi]
+from = ["IosevkaShengyi"]
+
+[collectPlans.IosevkaTermShengyi]
+from = ["IosevkaTermShengyi"]

@@ -1,4 +1,4 @@
-"""Validate the built font families and package them with their build inputs."""
+"""Validate every face in the built Super TTCs and package them with their build inputs."""
 
 import argparse
 import hashlib
@@ -11,11 +11,11 @@ import zipfile
 from pathlib import Path
 
 import uharfbuzz as hb
-from fontTools.ttLib import TTFont
+from fontTools.ttLib import TTCollection
 
 
-def shape(data, text, calt):
-    font = hb.Font(hb.Face(data))
+def shape(data, text, calt, font_index):
+    font = hb.Font(hb.Face(data, font_index))
     buffer = hb.Buffer()
     buffer.add_str(text)
     buffer.guess_segment_properties()
@@ -47,15 +47,18 @@ def collect_fonts(source, plans):
             for slope in axis(plans, plan, "slopes").values()
         }
         actual = set()
-        fonts = sorted((source / "dist" / name / "TTF").glob("*.ttf"))
-        if len(fonts) != len(expected):
-            raise ValueError(f"{name}: expected {len(expected)} TTFs, found {len(fonts)}")
-        for path in fonts:
-            data = path.read_bytes()
-            with TTFont(io.BytesIO(data)) as font:
+        path = source / "dist" / ".super-ttc" / f"{name}.ttc"
+        data = path.read_bytes()
+        with TTCollection(io.BytesIO(data)) as collection:
+            if len(collection.fonts) != len(expected):
+                raise ValueError(
+                    f"{path.name}: expected {len(expected)} faces, found {len(collection.fonts)}"
+                )
+            for font_index, font in enumerate(collection.fonts):
+                label = f"{path.name} face {font_index}"
                 family = font["name"].getDebugName(16) or font["name"].getDebugName(1)
                 if family != plan["family"]:
-                    raise ValueError(f"{path.name}: unexpected family {family!r}")
+                    raise ValueError(f"{label}: unexpected family {family!r}")
                 actual.add((
                     font["OS/2"].usWeightClass,
                     font["OS/2"].usWidthClass,
@@ -65,17 +68,17 @@ def collect_fonts(source, plans):
                 required = {ord(char) for char in "0aIlλ∀∃→\ue0b1\ue0b3"}
                 missing = required - font.getBestCmap().keys()
                 if missing:
-                    raise ValueError(f"{path.name}: missing codepoints {sorted(missing)}")
+                    raise ValueError(f"{label}: missing codepoints {sorted(missing)}")
                 features = font["GSUB"].table.FeatureList.FeatureRecord
                 if not any(record.FeatureTag == "calt" for record in features):
-                    raise ValueError(f"{path.name}: missing default ligature feature")
-            for sample in ("->", "--", "(*"):
-                if shape(data, sample, False) == shape(data, sample, True):
-                    raise ValueError(f"{path.name}: calt has no effect on {sample!r}")
-            files.append((path, f"{name}/{path.name}"))
-            print(f"Verified {path.name}")
+                    raise ValueError(f"{label}: missing default ligature feature")
+                for sample in ("->", "--", "(*"):
+                    if shape(data, sample, False, font_index) == shape(data, sample, True, font_index):
+                        raise ValueError(f"{label}: calt has no effect on {sample!r}")
+                print(f"Verified {label}")
         if actual != expected:
             raise ValueError(f"{name}: style mismatch; expected {expected}, found {actual}")
+        files.append((path, f"{name}/{path.name}"))
     return files
 
 
@@ -110,7 +113,7 @@ def main():
             archive.write(config_dir / name, name)
         archive.writestr("build-info.json", json.dumps(manifest, indent=2) + "\n")
     notes = (
-        f"Iosevka Shengyi 与 Iosevka Term Shengyi，共 {len(files)} 个 TTF 文件。\n\n"
+        f"Iosevka Shengyi 与 Iosevka Term Shengyi，共 {len(files)} 个 Super TTC 文件。\n\n"
         f"- Iosevka：{version}（`{upstream_commit}`）\n"
         f"- dotfiles：`{args.dotfiles_commit}`\n"
         "- Curly / ss20、长点零、双层带衬线 a、dlig 连字预设。\n"
