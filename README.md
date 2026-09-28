@@ -218,6 +218,35 @@ Emacs 首次部署可以使用 `--debug-init` 启动，以便定位缺包或外�
 `custom.el` 受版本管理。通过 Emacs Customize 保存设置时，会沿符号链接直接
 修改仓库中的 `emacs/custom.el`，提交前需要检查 `git diff`。
 
+### Emacs 原生编译
+
+升级 Emacs 后，即使原生编译的 ABI 改变，已有的 `.elc` 通常仍可使用；缺失的
+`.eln` 会在加载相应库时按需编译。`package-native-compile` 已开启，新安装或
+更新的包也会自动进行原生编译。
+
+需要提前补编译现有包时，等已有编译任务结束，再在正常启动的 Emacs 中用
+`M-:` 执行：
+
+```elisp
+(native-compile-async
+ (seq-filter (lambda (dir)
+               (and dir (file-in-directory-p dir package-user-dir)))
+             load-path)
+ nil nil
+ (lambda (file)
+   (and (not (string-prefix-p "." (file-name-nondirectory file)))
+        (file-exists-p (concat file "c")))))
+```
+
+这里只扫描当前已加入 `load-path` 的包目录，不递归，并且只选择已有 `.elc` 的
+源文件。这样不会把 `.dir-locals.el` 当程序编译，也不会扫描已被内置版本替代的
+外部 Compat。Proof General 尚未启用的 Coq 等后端留给加载时按需编译；打开
+相应语言文件、加载后端后，也可以再次执行上面的表达式。
+
+不要再直接递归编译整个 `package-user-dir`：其中可能包含未启用的包、需要专门
+加载路径的子目录以及配置数据。编译日志可在 `*Async-native-compile-log*` 查看；
+上述表达式只生成编译产物，不主动重新加载库。
+
 ## 备份与回滚
 
 建立链接前，应逐项查看原目标并将需要保留的内容移动到仓库之外的唯一备份

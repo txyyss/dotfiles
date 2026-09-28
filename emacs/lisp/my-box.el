@@ -7,7 +7,8 @@
 ;;; Code:
 
 (require 'face-remap)
-(require 'modus-themes)
+(eval-and-compile
+  (require-theme 'modus-themes))
 
 (defgroup my-box nil
   "Box-style window appearance."
