@@ -22,7 +22,10 @@
  '(backup-directory-alist '(("." . "~/.emacs.d/backup")))
  '(bidi-paragraph-direction 'left-to-right)
  '(blink-cursor-mode nil)
- '(browse-url-browser-function 'xwidget-webkit-browse-url)
+ '(browse-url-browser-function 'browse-url-default-browser)
+ '(browse-url-handlers
+   '(("\\`https?://" . xwidget-webkit-browse-url)
+     ("\\`file:" . browse-url-default-browser)))
  '(browse-url-new-window-flag t)
  '(c-basic-offset 4)
  '(column-number-mode t)
