@@ -88,12 +88,13 @@
  '(ls-lisp-use-insert-directory-program nil)
  '(lsp-headerline-breadcrumb-enable nil)
  '(lsp-modeline-code-action-fallback-icon "✦")
+ '(magit-section-visibility-indicators '((?▸ . ?▾) ("…" . t)))
  '(magit-status-margin '(t age magit-log-margin-width nil 18))
  '(major-mode-remap-alist
    '((c-mode . c-ts-mode) (c++-mode . c++-ts-mode)
      (html-mode . html-ts-mode) (markdown-mode . markdown-ts-mode)))
  '(marginalia-mode t)
- '(mode-line-collapse-minor-modes t)
+ '(mode-line-collapse-minor-modes '(not text-scale-mode))
  '(mode-line-collapse-minor-modes-to " ❖")
  '(mode-line-format
    '("%e" mode-line-front-space
@@ -220,5 +221,6 @@
  '(default ((t (:height 180 :family "Iosevka Shengyi"))))
  '(fixed-pitch ((t (:family "Iosevka Shengyi"))))
  '(fixed-pitch-serif ((t (:family "Iosevka Curly Slab"))))
+ '(magit-left-margin ((t (:inherit default :family "Iosevka Term Shengyi"))))
  '(org-modern-symbol ((t (:family "Iosevka Shengyi"))) t)
  '(variable-pitch ((t (:family "Iosevka Aile")))))
