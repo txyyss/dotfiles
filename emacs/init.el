@@ -280,6 +280,8 @@ Use `revert-buffer' (\\[revert-buffer]) to restore the original listing."
   (set-fontset-font t script (font-spec :family "Iosevka Shengyi") nil 'prepend))
 (dolist (script '(han kana hangul cjk-misc bopomofo))
   (set-fontset-font t script (font-spec :family "LXGW WenKai") nil 'prepend))
+;; Include the red dragon, which Emacs classifies as emoji.
+(set-fontset-font t '(#x1f000 . #x1f02b) (font-spec :family "LXGW WenKai"))
 (set-fontset-font t '(#xe000 . #xf8ff) (font-spec :family "Iosevka Shengyi") nil 'prepend)
 ;; Custom font build configuration and upstream version: ../fonts/iosevka/
 
