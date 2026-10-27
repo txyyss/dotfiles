@@ -69,7 +69,7 @@ SHA-256 一起打包。
 ## 升级 Iosevka
 
 1. 在 [Iosevka Releases](https://github.com/be5invis/Iosevka/releases) 查看新的
-   正式版本，将 `version.txt` 中的 `v34.9.0` 改为对应的版本 tag。
+   正式版本，将 `version.txt` 中的 `v34.9.1` 改为对应的版本 tag。
 2. 提交并推送版本文件，再手动运行 **Build Iosevka fonts**。
 3. 下载新字体并检查字形、字重和连字，满意后替换本机安装的旧版本。
 
@@ -126,6 +126,6 @@ npm run build -- super-ttc::IosevkaShengyi super-ttc::IosevkaTermShengyi --jCmd=
 `dist/.super-ttc/IosevkaTermShengyi.ttc`。
 打包脚本需要 Python 3.11 或更高版本及 `requirements.txt` 中的依赖。
 
-参考：[34.9.0 的 TTC 构建说明](https://github.com/be5invis/Iosevka/blob/v34.9.0/doc/custom-build.md#ttc-building)、
-[34.9.0 版本预设](https://github.com/be5invis/Iosevka/blob/v34.9.0/build-plans.toml)。
+参考：[34.9.1 的 TTC 构建说明](https://github.com/be5invis/Iosevka/blob/v34.9.1/doc/custom-build.md#ttc-building)、
+[34.9.1 版本预设](https://github.com/be5invis/Iosevka/blob/v34.9.1/build-plans.toml)。
 升级时如需查阅新文档，将链接中的 tag 换成 `version.txt` 对应的版本。
