@@ -123,6 +123,10 @@
   "C-f" #'huarong-move-right
   "C-p" #'huarong-move-up
   "C-n" #'huarong-move-down
+  "M-<left>" #'huarong-select-left
+  "M-<right>" #'huarong-select-right
+  "M-<up>" #'huarong-select-up
+  "M-<down>" #'huarong-select-down
   "w" #'huarong-select-up
   "a" #'huarong-select-left
   "s" #'huarong-select-down
@@ -383,7 +387,7 @@ Pieces of the same shape are treated as interchangeable."
     (insert "\n")
     (huarong--insert-board)
     (insert "\n")
-    (huarong--insert-centered "WASD 选择 · 方向键移动 · 鼠标选择")
+    (huarong--insert-centered "M-方向键 / WASD 选择 · 方向键移动 · 鼠标选择")
     (huarong--insert-centered
      "[h] 提示  [S] 自动求解  [SPC] 停止  [u] 撤销")
     (huarong--insert-centered
